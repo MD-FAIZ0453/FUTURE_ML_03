@@ -1,0 +1,13 @@
+Data Scientist
+
+Required Skills:
+
+Python
+SQL
+Machine Learning
+Data Science
+NLP
+TensorFlow
+Git
+Deep Learning
+AWS
