@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TalentMatch AI | Candidate Screening & Resume Ranking System</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Vanilla CSS Stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar / Navigation Header -->
+        <header class="app-header">
+            <div class="logo-area">
+                <div class="logo-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+                <div class="logo-text">
+                    <h1>TalentMatch <span>AI</span></h1>
+                    <p>Resume Screening & Ranking System</p>
+                </div>
+            </div>
+            <div class="header-tag">
+                <span class="intern-badge"><i class="fa-solid fa-user-astronaut"></i> Future Interns Task 3</span>
+            </div>
+        </header>
+
+        <!-- Main Dashboard Layout -->
+        <main class="dashboard-grid">
+            
+            <!-- SECTION 1: Stats Overview Cards -->
+            <section class="stats-row full-width">
+                <div class="stat-card" id="stat-total-resumes">
+                    <div class="stat-icon bg-blue"><i class="fa-solid fa-file-invoice"></i></div>
+                    <div class="stat-content">
+                        <h3>--</h3>
+                        <p>Total Resumes Indexed</p>
+                    </div>
+                </div>
+                <div class="stat-card" id="stat-avg-score">
+                    <div class="stat-icon bg-purple"><i class="fa-solid fa-chart-line"></i></div>
+                    <div class="stat-content">
+                        <h3>--%</h3>
+                        <p>Average Match Score</p>
+                    </div>
+                </div>
+                <div class="stat-card" id="stat-total-categories">
+                    <div class="stat-icon bg-teal"><i class="fa-solid fa-tags"></i></div>
+                    <div class="stat-content">
+                        <h3>--</h3>
+                        <p>Industries Covered</p>
+                    </div>
+                </div>
+                <div class="stat-card" id="stat-active-skills">
+                    <div class="stat-icon bg-amber"><i class="fa-solid fa-brain"></i></div>
+                    <div class="stat-content">
+                        <h3>--</h3>
+                        <p>Configured Skills</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 2: Left Panel - Input & Configuration -->
+            <div class="left-column">
+                
+                <!-- Card 1: Job Description Input & Presets -->
+                <div class="dashboard-card config-card">
+                    <div class="card-header">
+                        <h2><i class="fa-solid fa-file-lines"></i> Job Description Details</h2>
+                        <div class="preset-dropdown-container">
+                            <label for="preset-select">Preset Role:</label>
+                            <select id="preset-select" class="form-control-sm">
+                                <option value="" disabled selected>Select Preset Role...</option>
+                                <option value="data_scientist">Data Scientist</option>
+                                <option value="python_developer">Python Backend Engineer</option>
+                                <option value="hr_manager">Human Resources Manager</option>
+                                <option value="financial_analyst">Financial Analyst / Accountant</option>
+                                <option value="healthcare_coordinator">Nurse Coordinator</option>
+                                <option value="marketing_lead">Digital Marketing Specialist</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label for="job-title-input">Target Job Title</label>
+                            <input type="text" id="job-title-input" class="form-control" placeholder="e.g., Senior Data Scientist">
+                        </div>
+                        <div class="form-group">
+                            <label for="jd-textarea">Job Description Text</label>
+                            <textarea id="jd-textarea" class="form-control text-area-large" placeholder="Paste the job description or select a preset role to extract skills dynamically..."></textarea>
+                        </div>
+                        <button id="extract-skills-btn" class="btn btn-secondary btn-full"><i class="fa-solid fa-microchip"></i> Parse Job Description & Extract Skills</button>
+                    </div>
+                </div>
+
+                <!-- Card 2: Skill Configuration & Weights -->
+                <div class="dashboard-card skill-config-card">
+                    <div class="card-header">
+                        <h2><i class="fa-solid fa-sliders"></i> Skill Weight Configurator</h2>
+                        <button id="add-custom-skill-btn" class="btn btn-pill-sm"><i class="fa-solid fa-plus"></i> Add Skill</button>
+                    </div>
+                    <div class="card-body">
+                        <p class="config-instructions">Below are the skills extracted from the Job Description. Customize weights to influence ranking:</p>
+                        
+                        <div id="skills-list-container" class="skills-config-list">
+                            <!-- Skill configuration rows will be generated dynamically here -->
+                            <div class="no-skills-placeholder">
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                                <p>No skills configured yet. Parse a job description or add custom skills above.</p>
+                            </div>
+                        </div>
+
+                        <!-- Weights split slider -->
+                        <div class="weight-sliders-group">
+                            <div class="slider-header">
+                                <span>Evaluation Formula Split</span>
+                                <span id="weight-split-label">40% Cosine Sim / 60% Skill Match</span>
+                            </div>
+                            <input type="range" id="formula-weight-slider" class="range-slider" min="0" max="100" value="60">
+                            <div class="slider-labels">
+                                <span>Semantic TF-IDF (Cosine Sim)</span>
+                                <span>Direct Keyword Skill Match</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Card 3: Ranking Parameters -->
+                <div class="dashboard-card parameters-card">
+                    <div class="card-header">
+                        <h2><i class="fa-solid fa-filter"></i> Search & Filtering Criteria</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="category-select">Candidate Category</label>
+                                <select id="category-select" class="form-control">
+                                    <option value="ALL">All Categories</option>
+                                    <!-- Populated dynamically -->
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="min-score-input">Min Score Threshold</label>
+                                <div class="slider-with-bubble">
+                                    <input type="range" id="min-score-input" class="range-slider" min="0" max="90" value="0">
+                                    <span id="min-score-val">0%</span>
+                                </div>
+                            </div>
+                        </div>
+                        <button id="rank-candidates-btn" class="btn btn-primary btn-full btn-large"><i class="fa-solid fa-list-ol"></i> Run Candidate Screening & Rank</button>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- SECTION 3: Right Panel - Upload Playground & Ranked Candidates -->
+            <div class="right-column">
+                
+                <!-- Card 4: Drag & Drop Resume Playground -->
+                <div class="dashboard-card playground-card">
+                    <div class="card-header">
+                        <h2><i class="fa-solid fa-rocket"></i> Live Candidate Screener (Upload Zone)</h2>
+                    </div>
+                    <div class="card-body">
+                        <div id="drop-zone" class="drop-zone">
+                            <div class="drop-zone-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+                            <h3>Drag & Drop Resume here</h3>
+                            <p>Supports .pdf or .txt formats. Max size 5MB.</p>
+                            <span class="file-select-prompt">or click to browse local files</span>
+                            <input type="file" id="file-input" style="display:none;" accept=".pdf,.txt">
+                        </div>
+
+                        <!-- Progress Bar / Processing Spinner -->
+                        <div id="upload-status" class="upload-status-box hidden">
+                            <div class="status-content">
+                                <div class="spinner"><i class="fa-solid fa-circle-notch fa-spin"></i></div>
+                                <div class="status-info">
+                                    <p id="upload-status-text">Uploading and scanning resume...</p>
+                                    <div class="progress-bar-container">
+                                        <div id="upload-progress-fill" class="progress-fill" style="width: 0%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Uploaded Candidates Table -->
+                        <div id="uploaded-results-container" class="uploaded-results-container hidden">
+                            <h4><i class="fa-solid fa-circle-check text-green"></i> Real-time Evaluation Result</h4>
+                            <div class="uploaded-card" id="uploaded-candidate-card">
+                                <!-- Generated Dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 5: Ranking Leaderboard -->
+                <div class="dashboard-card leaderboard-card">
+                    <div class="card-header">
+                        <h2><i class="fa-solid fa-trophy"></i> Screening Rankings & Match Scores</h2>
+                        <div class="table-actions">
+                            <input type="text" id="candidate-search" class="form-control-sm" placeholder="Search Candidate ID...">
+                            <span class="results-count-badge" id="results-count-text">0 matches</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-tab-container">
+                            <button class="tab-btn active" id="tab-table-btn"><i class="fa-solid fa-table"></i> Rankings Table</button>
+                            <button class="tab-btn" id="tab-chart-btn"><i class="fa-solid fa-chart-bar"></i> Visual Analytics</button>
+                        </div>
+
+                        <!-- Panel A: Rankings Table -->
+                        <div id="rankings-table-view" class="tab-panel active">
+                            <div class="table-responsive">
+                                <table class="table" id="rankings-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Rank</th>
+                                            <th>ID</th>
+                                            <th>Category</th>
+                                            <th>Similarity (40%)</th>
+                                            <th>Skills (60%)</th>
+                                            <th>Overall Fit</th>
+                                            <th class="text-right">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="rankings-tbody">
+                                        <tr>
+                                            <td colspan="7" class="empty-table-placeholder">
+                                                <i class="fa-solid fa-circle-info"></i>
+                                                <p>Configure details and click "Run Candidate Screening" to load candidates.</p>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Panel B: Chart Visualizations -->
+                        <div id="rankings-chart-view" class="tab-panel">
+                            <div class="charts-grid">
+                                <div class="chart-container">
+                                    <canvas id="scoresBarChart"></canvas>
+                                </div>
+                                <div class="chart-container">
+                                    <canvas id="categoryPieChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+
+        </main>
+        
+        <!-- FOOTER -->
+        <footer class="app-footer-bar">
+            <p>Designed and Built by <strong>Antigravity AI</strong> for the Future Interns Machine Learning Task 3 | Powered by Python, spaCy, NLTK & Scikit-learn</p>
+        </footer>
+    </div>
+
+    <!-- DETAIL DRAWER PANEL (Slides in from the right) -->
+    <div id="detail-drawer" class="detail-drawer">
+        <div class="drawer-overlay" id="drawer-overlay"></div>
+        <div class="drawer-content">
+            <div class="drawer-header">
+                <div class="candidate-meta">
+                    <span class="category-tag" id="drawer-candidate-category">--</span>
+                    <h2 id="drawer-candidate-id">Candidate Details</h2>
+                </div>
+                <button class="drawer-close-btn" id="drawer-close-btn">&times;</button>
+            </div>
+            
+            <div class="drawer-body">
+                <!-- Score Cards Grid -->
+                <div class="drawer-score-grid">
+                    <div class="score-breakdown-card">
+                        <div class="score-breakdown-circle" id="drawer-final-score-circle">
+                            <span class="value" id="drawer-final-score-val">--%</span>
+                            <span class="label">Overall Fit</span>
+                        </div>
+                    </div>
+                    <div class="score-stats">
+                        <div class="score-sub-item">
+                            <span class="label">TF-IDF Semantic Similarity</span>
+                            <div class="score-sub-bar-container">
+                                <div class="score-sub-bar bg-blue" id="drawer-sim-score-bar" style="width: 0%;"></div>
+                            </div>
+                            <span class="value" id="drawer-sim-score-val">--%</span>
+                        </div>
+                        <div class="score-sub-item">
+                            <span class="label">Direct Keyword Skill Match</span>
+                            <div class="score-sub-bar-container">
+                                <div class="score-sub-bar bg-purple" id="drawer-skill-score-bar" style="width: 0%;"></div>
+                            </div>
+                            <span class="value" id="drawer-skill-score-val">--%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Explanation / Fit analysis text -->
+                <div class="analysis-explanation-card">
+                    <h4><i class="fa-solid fa-circle-question text-purple"></i> Decision Support Explainer</h4>
+                    <p id="drawer-fit-explanation">Loading analysis...</p>
+                </div>
+
+                <!-- Skill Gaps Cards -->
+                <div class="skill-gap-split-row">
+                    <div class="skill-gap-list-card bg-green-light">
+                        <h4><i class="fa-solid fa-circle-check text-green"></i> Matched Skills (<span id="drawer-matched-count">0</span>)</h4>
+                        <div class="skills-badges-wrap" id="drawer-matched-skills">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                    <div class="skill-gap-list-card bg-red-light">
+                        <h4><i class="fa-solid fa-circle-xmark text-red"></i> Missing Skills (<span id="drawer-missing-count">0</span>)</h4>
+                        <div class="skills-badges-wrap" id="drawer-missing-skills">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Resume Text Viewer -->
+                <div class="resume-viewer-section">
+                    <div class="viewer-header">
+                        <h4><i class="fa-solid fa-file-invoice"></i> Candidate Resume Text</h4>
+                        <div class="viewer-actions">
+                            <button id="highlight-skills-btn" class="btn btn-pill-sm active"><i class="fa-solid fa-highlighter"></i> Highlight Skills</button>
+                        </div>
+                    </div>
+                    <div class="resume-text-container" id="drawer-resume-text-container">
+                        <!-- Resume text with highlighted skills -->
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL POPUP FOR ADDING A CUSTOM SKILL -->
+    <div id="add-skill-modal" class="modal-overlay hidden">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>Add Custom Required Skill</h3>
+                <button class="modal-close-btn" id="modal-close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="custom-skill-input">Skill Name / Keyword</label>
+                    <input type="text" id="custom-skill-input" class="form-control" placeholder="e.g., Kubernetes, Excel, PyTorch">
+                </div>
+                <div class="form-group">
+                    <label for="custom-skill-weight">Skill Priority / Weight</label>
+                    <select id="custom-skill-weight" class="form-control">
+                        <option value="1.0">Required (Weight 1.0)</option>
+                        <option value="2.0">Critical (Weight 2.0)</option>
+                        <option value="0.5">Preferred (Weight 0.5)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="modal-cancel-btn">Cancel</button>
+                <button class="btn btn-primary" id="modal-add-btn">Add Skill</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Frontend logic Controller -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

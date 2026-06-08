@@ -1,0 +1,23 @@
+Jane Doe
+Contact: jane.doe@email.com
+Position: Senior Python Backend Developer / ML Engineer
+
+Summary:
+Innovative Software Engineer and Data Scientist with over 5 years of professional experience building web APIs and implementing machine learning systems. Expert in Python web frameworks (Flask, Django) and scaling databases with SQL.
+
+Skills:
+- Languages: Python, JavaScript, HTML, CSS, SQL, C++
+- Frameworks & Libraries: React, Flask, Django, Scikit-learn, TensorFlow, PyTorch
+- Platforms & Tools: AWS, Docker, Git, CI/CD, Linux, Jenkins
+- Methodologies: Agile, Scrum, Project Management
+
+Professional Experience:
+Lead Software Engineer | TechSolutions Corp (2023 - Present)
+- Architected and built microservices using Python and Flask, deploying to AWS ECS containers using Docker.
+- Spearheaded team migration to Git-based CI/CD workflows, reducing deployment cycle times by 35%.
+- Coordinated sprint planning and agile project management schedules as Scrum Master.
+
+Machine Learning Developer | FutureData Labs (2021 - 2023)
+- Implemented deep learning classification models with TensorFlow and PyTorch, scoring 94% accuracy.
+- Managed relational databases and wrote complex SQL queries to pipeline structured data.
+- Built NLP models to parse customer feedback using scikit-learn.

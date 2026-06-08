@@ -23,3 +23,7 @@ Thumbs.db
 
 # Raw dataset folder (large PDF files, not used by app.py)
 data/data/
+
+# Cache files
+outputs/*.pkl
+
